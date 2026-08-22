@@ -1,0 +1,22 @@
+{
+  "//": "Type-checking only. Auspex is never compiled: Node 22.6+ strips the type annotations at load, so `node src/cli/main.ts` just runs. That is why there are no runtime dependencies and no build step, and it is a deliberate design choice for a tool whose whole job is to be trivially runnable next to whatever editor it is inspecting.",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": false,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "erasableSyntaxOnly": true
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}
