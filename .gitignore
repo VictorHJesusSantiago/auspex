@@ -1,0 +1,23 @@
+# Dependencies. Auspex has no runtime dependencies; this covers the dev toolchain
+# (TypeScript, and the VS Code extension's own build) and nothing else.
+node_modules/
+
+# The VS Code extension's packaged output.
+extensions/vscode/*.vsix
+extensions/vscode/out/
+
+# Captured debug sessions and snapshots, if anyone points --out here. These hold a
+# developer's own source, variables and environment; they are working artefacts, not
+# source, and must never be committed by accident.
+*.auspex.json
+auspex-debug-*.json
+
+# Editor and OS noise.
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs.
+*.log
+npm-debug.log*

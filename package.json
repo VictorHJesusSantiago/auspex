@@ -1,0 +1,44 @@
+{
+  "name": "auspex",
+  "version": "1.0.0",
+  "description": "An editor-agnostic connector that extracts development context from any IDE and serves it to any AI.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.6.0"
+  },
+  "bin": {
+    "auspex": "./src/cli/main.ts"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./core": "./src/core/model.ts"
+  },
+  "scripts": {
+    "auspex": "node src/cli/main.ts",
+    "test": "node --test \"tests/*.test.ts\"",
+    "test:watch": "node --test --watch \"tests/*.test.ts\"",
+    "typecheck": "tsc --noEmit",
+    "mcp": "node src/cli/main.ts mcp",
+    "serve": "node src/cli/main.ts serve",
+    "gui": "node src/cli/main.ts gui",
+    "watch": "node src/cli/main.ts watch"
+  },
+  "keywords": [
+    "ide",
+    "editor",
+    "context",
+    "mcp",
+    "model-context-protocol",
+    "lsp",
+    "dap",
+    "ai",
+    "claude",
+    "gpt",
+    "gemini"
+  ],
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "typescript": "^5.7.0"
+  }
+}
