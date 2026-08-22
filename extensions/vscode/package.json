@@ -1,0 +1,71 @@
+{
+  "name": "auspex-vscode",
+  "displayName": "Auspex",
+  "description": "Reports live editor state and deep debug sessions — open files, caret, selection, unsaved buffers, diagnostics, call stacks, variables and the whole debug protocol timeline — to a local Auspex server, so an AI assistant can read what you are actually looking at.",
+  "version": "1.0.0",
+  "publisher": "auspex",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Debuggers"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "auspex.pushNow",
+        "title": "Auspex: Push state now"
+      },
+      {
+        "command": "auspex.toggle",
+        "title": "Auspex: Enable or disable reporting"
+      },
+      {
+        "command": "auspex.debugStatus",
+        "title": "Auspex: Debug session status"
+      }
+    ],
+    "configuration": {
+      "title": "Auspex",
+      "properties": {
+        "auspex.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Report editor state to the local Auspex server. Turning this off stops all reporting immediately."
+        },
+        "auspex.endpoint": {
+          "type": "string",
+          "default": "http://127.0.0.1:4278/push",
+          "description": "Where to post. A loopback address by default; nothing is ever sent off this machine unless you change this."
+        },
+        "auspex.intervalSeconds": {
+          "type": "number",
+          "default": 10,
+          "minimum": 2,
+          "description": "Heartbeat interval. State is also pushed immediately whenever the caret, the open tabs or the diagnostics change."
+        },
+        "auspex.includeUnsavedText": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include the contents of unsaved buffers. These exist only in the editor's memory, so this is the only way anything else can see them. Saved files are never sent — they are already readable from disk."
+        },
+        "auspex.maxTextBytes": {
+          "type": "number",
+          "default": 200000,
+          "description": "Largest unsaved buffer to send, in bytes."
+        },
+        "auspex.trackDebugSessions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Capture debug sessions from inside the editor. This needs no configuration and works for every debugger, but it can only see what the editor asked for — a variable nobody expanded was never sent over the wire. For every scope of every frame, deep variable trees and memory, run `auspex proxy --dap --deep` instead."
+        }
+      }
+    }
+  }
+}
