@@ -159,6 +159,42 @@ describe('HTTP surface', () => {
     }
   });
 
+  test('adds defensive browser headers without opening CORS by default', async () => {
+    const running = await startHttpServer({ port: 0, adapters: [], log: () => {} });
+    const port = (running.server.address() as { port: number }).port;
+
+    try {
+      const response = await fetch(`http://127.0.0.1:${port}/health`);
+
+      assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+      assert.equal(response.headers.get('x-frame-options'), 'DENY');
+      assert.equal(response.headers.get('referrer-policy'), 'no-referrer');
+      assert.equal(response.headers.get('cache-control'), 'no-store');
+      assert.match(response.headers.get('content-security-policy') ?? '', /frame-ancestors 'none'/);
+      assert.match(response.headers.get('permissions-policy') ?? '', /camera=\(\)/);
+      assert.equal(response.headers.get('access-control-allow-origin'), null);
+    } finally {
+      await running.close();
+    }
+  });
+
+  test('serves CORS headers only when explicitly enabled', async () => {
+    const running = await startHttpServer({ port: 0, adapters: [], cors: true, log: () => {} });
+    const port = (running.server.address() as { port: number }).port;
+    const base = `http://127.0.0.1:${port}`;
+
+    try {
+      const response = await fetch(`${base}/health`);
+      assert.equal(response.headers.get('access-control-allow-origin'), '*');
+
+      const preflight = await fetch(`${base}/context`, { method: 'OPTIONS' });
+      assert.equal(preflight.status, 204);
+      assert.equal(preflight.headers.get('access-control-allow-methods'), 'GET, POST, OPTIONS');
+    } finally {
+      await running.close();
+    }
+  });
+
   test('accepts a push and serves it back as live state', async () => {
     // The full plugin round trip: an editor posts what only it can see, and the next reader gets it.
     // The PushAdapter has to be in the list -- the store receives the payload either way, but it is

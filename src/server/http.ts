@@ -114,6 +114,36 @@ interface RequestContext extends HttpServerOptions {
   log: (message: string) => void;
 }
 
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "base-uri 'none'",
+  "object-src 'none'",
+  "frame-ancestors 'none'",
+  "form-action 'none'",
+  "img-src 'self' data:",
+  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline'",
+  "connect-src 'self'",
+].join('; ');
+
+const PERMISSIONS_POLICY = 'camera=(), microphone=(), geolocation=(), payment=(), usb=()';
+
+function applySecurityHeaders(request: IncomingMessage, response: ServerResponse): void {
+  response.setHeader('Content-Security-Policy', CONTENT_SECURITY_POLICY);
+  response.setHeader('X-Content-Type-Options', 'nosniff');
+  response.setHeader('X-Frame-Options', 'DENY');
+  response.setHeader('Referrer-Policy', 'no-referrer');
+  response.setHeader('Permissions-Policy', PERMISSIONS_POLICY);
+  response.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  response.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  response.setHeader('Cache-Control', 'no-store');
+
+  const socket = request.socket as typeof request.socket & { encrypted?: boolean };
+  if (socket.encrypted || request.headers['x-forwarded-proto'] === 'https') {
+    response.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
+}
+
 async function handleRequest(
   request: IncomingMessage,
   response: ServerResponse,
@@ -122,16 +152,18 @@ async function handleRequest(
   const url = new URL(request.url ?? '/', 'http://localhost');
   const path = url.pathname.replace(/\/+$/, '') || '/';
 
-  if (context.cors || true) {
-    // CORS is permitted because the server is loopback-bound and token-protected off-machine; the
-    // GUI and any local tool should be able to reach it without a proxy.
+  applySecurityHeaders(request, response);
+
+  if (context.cors) {
+    // CORS is opt-in because this server serves source code and diagnostics. Same-origin GUI use
+    // does not need it; integrations that do can ask for it deliberately.
     response.setHeader('Access-Control-Allow-Origin', '*');
     response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     response.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  }
-  if (request.method === 'OPTIONS') {
-    response.writeHead(204).end();
-    return;
+    if (request.method === 'OPTIONS') {
+      response.writeHead(204).end();
+      return;
+    }
   }
 
   // The GUI and the health check are the only unauthenticated routes: one is a static page, and
